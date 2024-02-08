@@ -80,7 +80,14 @@ class Tag_Position():
                 ]
             )
 
-            x_y_ = np.matmul(rotation_mat, xy)
+            safety_distance = np.array(
+                [
+                    [math.cos(theta)],
+                    [math.sin(theta)]
+                ]
+            )
+
+            x_y_ = np.matmul(rotation_mat, (xy - safety_distance))
 
             x_y_ = x_y_ + translation_mat
 
