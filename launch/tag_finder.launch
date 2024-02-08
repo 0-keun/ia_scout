@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+
+<launch>	
+      
+  <node pkg="uwb_pkg" type="pub_node" name="UWB_pub" output="screen">
+  <node pkg="ia_scout" type="pub_node" name="tag_position" output="screen">
+  <node pkg="ia_scout" type="tf_node" name="TF_broadcaster" output="screen">
+
+</launch>
