@@ -43,7 +43,7 @@ def get_pose(D1,D2,dis_anchors):
     dif_h = 0.2
 
     if D1 == None or D2 ==None:
-        print(11111111)
+        print("UWB0 DATA is None")
         return [0.001,0.001]
     
     else:
@@ -53,5 +53,4 @@ def get_pose(D1,D2,dis_anchors):
         A = get_angle(D2,D1,dis_anchors)
 
         return get_wh(D1,A,dis_anchors)
-
 
