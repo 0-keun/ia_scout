@@ -5,7 +5,7 @@ from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped
 from std_msgs.msg import Float32
 from filter import Kalman_Filter, MovAvg_Filter
 from triangulation import get_pose
-import tf.transformation import euler_from_quaternion
+from tf.transformations import euler_from_quaternion
 import numpy as np
 import math
 
@@ -43,13 +43,16 @@ class Tag_Position():
         #############
 
         self.last_callback_time = rospy.get_time()  
-        self.callback_interval = 0.1  # [s]
+        self.callback_interval = 0.5  # [s]
         self.current_position = [0,0,0]
         self.dis_threshold = 1
 
         self.D1, self.D2 = 0.001, 0.001
         self.dis_anchors = 0.9
         self.Y = 0
+        self.flag = "GO"
+        self.translation = [0,0,0]
+        self.rotation = [0,0,0,1]
 
     def get_tf(self, theta):
         if self.position_tag.pose.position.x != None and self.position_tag.pose.position.y != None:
@@ -77,7 +80,7 @@ class Tag_Position():
                 ]
             )
 
-            x_y_ = rotation_mat @ xy
+            x_y_ = np.matmul(rotation_mat, xy)
 
             x_y_ = x_y_ + translation_mat
 
@@ -117,8 +120,10 @@ class Tag_Position():
         #self.D2 = MV2.mov_avg_filter(data.data)
         self.D2 = data.data
         self.tag_pub()
-        if math.sqrt(math.pow(self.translation[0] - self.tag_in_map[0][0],2) - math.pow(self.translation[1] - self.tag_in_map[1][0],2)) > self.dis_threshold:
-            self.publish_current_goal()
+        if math.sqrt(math.pow(self.translation[0] - self.tag_in_map[0][0],2) + math.pow(self.translation[1] - self.tag_in_map[1][0],2)) > self.dis_threshold:
+            if rospy.get_time() - self.last_callback_time > self.callback_interval:
+                self.publish_current_goal()
+                self.last_callback_time = rospy.get_time()
         else:
             self.stop()
 
