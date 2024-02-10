@@ -84,10 +84,7 @@ class Tag_Position():
                 ]
             )
 
-<<<<<<< HEAD
             ## real goal is before 1m from tag's position
-=======
->>>>>>> 440d4d0e9110ec5942fca0e32df529ca5b8fb846
             safety_distance = np.array(
                 [
                     [math.cos(theta)],
