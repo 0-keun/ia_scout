@@ -8,6 +8,9 @@ from triangulation import get_pose
 from tf.transformations import euler_from_quaternion
 import numpy as np
 import math
+from LinearRegression import LR_poly
+
+LR = LR_poly()
 
 KF1 = Kalman_Filter()
 KF2 = Kalman_Filter()
@@ -41,13 +44,14 @@ class Tag_Position():
         self.goal_msg = PoseStamped()
         self.goal_publisher = rospy.Publisher('move_base_simple/goal', PoseStamped, queue_size=1)
         #############
-
+        self.init_callback_time = rospy.get_time()
         self.last_callback_time = rospy.get_time()  
         self.callback_interval = 0.5  # [s]
         self.current_position = [0,0,0]
         self.dis_threshold = 1
 
         self.D1, self.D2 = 0.001, 0.001
+        self.d1time,self.d2time = 0, 0
         self.dis_anchors = 0.9
         self.Y = 0
         self.flag = "GO"
@@ -80,7 +84,15 @@ class Tag_Position():
                 ]
             )
 
-            x_y_ = np.matmul(rotation_mat, xy)
+            ## real goal is before 1m from tag's position
+            safety_distance = np.array(
+                [
+                    [math.cos(theta)],
+                    [math.sin(theta)]
+                ]
+            )
+
+            x_y_ = np.matmul(rotation_mat, (xy - safety_distance))
 
             x_y_ = x_y_ + translation_mat
 
@@ -113,19 +125,33 @@ class Tag_Position():
         [self.R, self.P, self.Y] = euler_from_quaternion(self.rotation)
 
     def anchor1_callback(self, data):
-        # self.D1 = MV1.mov_avg_filter(data.data)
+
         self.D1 = data.data
+        self.d1time = rospy.get_time() - self.init_callback_time
 
     def anchor2_callback(self, data):
-        #self.D2 = MV2.mov_avg_filter(data.data)
+        
         self.D2 = data.data
+        self.d2time = rospy.get_time() - self.init_callback_time
+
+        ### guess the D1 at D2 time by Linear Regression ###
+
+        if LR.last_time != self.d1time:
+            LR.fit_model(self.d1time,self.D1)
+            LR.last_time == self.d1time
+
+        LR.run(self.d2time)
+
+        #####################################################
+        ########## publish goal(1m before the tag) ##########
+
         self.tag_pub()
         if math.sqrt(math.pow(self.translation[0] - self.tag_in_map[0][0],2) + math.pow(self.translation[1] - self.tag_in_map[1][0],2)) > self.dis_threshold:
             if rospy.get_time() - self.last_callback_time > self.callback_interval:
                 self.publish_current_goal()
                 self.last_callback_time = rospy.get_time()
-        else:
-            self.stop()
+
+        #####################################################
 
     def tag_pub(self):
         #################### base_link ####################
@@ -153,31 +179,15 @@ class Tag_Position():
         self.goal_msg.pose.position.x = self.tag_in_map[0][0]
         self.goal_msg.pose.position.y = self.tag_in_map[1][0]
         self.goal_msg.pose.position.z = 0.0
-        self.goal_msg.pose.orientation.x = 0
-        self.goal_msg.pose.orientation.y = 0
-        self.goal_msg.pose.orientation.z = 1.0
-        self.goal_msg.pose.orientation.w = 0
+        self.goal_msg.pose.orientation.x = self.rotation[0]
+        self.goal_msg.pose.orientation.y = self.rotation[1]
+        self.goal_msg.pose.orientation.z = self.rotation[2]
+        self.goal_msg.pose.orientation.w = self.rotation[3]
 
         self.goal_publisher.publish(self.goal_msg)
         self.flag = "GO"
         
         rospy.loginfo("MoveBaseSimpleGoal published: %s", self.goal_msg)
-
-    def stop(self):
-        if self.flag == "GO":
-            self.goal_msg.header.stamp = rospy.Time.now()
-            self.goal_msg.header.frame_id = "map"
-
-            self.goal_msg.pose.position.x = self.translation[0]
-            self.goal_msg.pose.position.y = self.translation[1]
-            self.goal_msg.pose.position.z = 0.0
-            self.goal_msg.pose.orientation.x = 0
-            self.goal_msg.pose.orientation.y = 0
-            self.goal_msg.pose.orientation.z = 1.0
-            self.goal_msg.pose.orientation.w = 0
-
-            self.goal_publisher.publish(self.goal_msg)  
-            self.flag = "STOP"
 
     def run(self):
         rospy.spin()

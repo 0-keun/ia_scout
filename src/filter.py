@@ -2,7 +2,7 @@
 
 import numpy as np
 
-class MovAvg_Filter():
+class MovAvg_Filter:
 
     def __init__(self):
         self.n = 10
@@ -23,7 +23,7 @@ class MovAvg_Filter():
         return self.x_avg
 
 
-class Kalman_Filter():
+class Kalman_Filter:
     def __init__(self):
         # Initialization for system model.
         self.A = 1
