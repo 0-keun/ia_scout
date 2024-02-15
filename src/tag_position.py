@@ -57,6 +57,7 @@ class Tag_Position():
         self.flag = "GO"
         self.translation = [0,0,0]
         self.rotation = [0,0,0,1]
+        self.sensor_error = 0.25
 
     def get_tf(self, theta):
         if self.position_tag.pose.position.x != None and self.position_tag.pose.position.y != None:
@@ -133,18 +134,17 @@ class Tag_Position():
         
         self.D2 = data.data
         self.d2time = rospy.get_time() - self.init_callback_time
-
+        
         ### guess the D1 at D2 time by Linear Regression ###
 
         if LR.last_time != self.d1time:
             LR.fit_model(self.d1time,self.D1)
             LR.last_time == self.d1time
 
-        LR.run(self.d2time)
+        self.D1_ = LR.run(self.d2time)
 
         #####################################################
         ########## publish goal(1m before the tag) ##########
-
         self.tag_pub()
         if math.sqrt(math.pow(self.translation[0] - self.tag_in_map[0][0],2) + math.pow(self.translation[1] - self.tag_in_map[1][0],2)) > self.dis_threshold:
             if rospy.get_time() - self.last_callback_time > self.callback_interval:
@@ -155,6 +155,7 @@ class Tag_Position():
 
     def tag_pub(self):
         #################### base_link ####################
+        self.D2 = self.D1 + (self.D2 - self.D1) * self.dis_anchors / (self.dis_anchors + self.sensor_error)
         [w,h] = get_pose(self.D1,self.D2,self.dis_anchors)
     
         self.position_tag.pose.position.x = h

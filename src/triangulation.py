@@ -1,10 +1,17 @@
 import math
-from filter import MovAvg_Filter
+from filter import MovAvg_Filter, Kalman_Filter
 
 MAF = MovAvg_Filter()
+KF1 = MovAvg_Filter()
+KF2 = MovAvg_Filter()
 
 def get_angle(a,b,c): # a, b, c are length of triangle
+    a = KF1.mov_avg_filter(a)
+    b = KF2.mov_avg_filter(b)
+    
     tem = (math.pow(b,2) + math.pow(c,2) - math.pow(a,2)) / (2*b*c)
+    print("D1:",a,"D2",b)
+    print('cos(angle):', tem)
     if tem > 0.9999:
         tem = 0.9999
     elif tem > 0.995:
@@ -20,7 +27,7 @@ def get_angle(a,b,c): # a, b, c are length of triangle
         tem = -0.984
 
     ang = MAF.mov_avg_filter(math.acos(tem))
-
+    # ang = math.acos(tem)
     return ang
 
 def get_wh(D1,A,dis_anchors):

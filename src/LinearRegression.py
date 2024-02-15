@@ -3,8 +3,8 @@ from sklearn.linear_model import LinearRegression
 
 class LR_poly:
     def __init__(self):
-        self.n = 3
-        self.feature_num = 10
+        self.n = 2
+        self.feature_num = 3
         self.lr = LinearRegression()
 
         self.feature = np.zeros(self.feature_num)
