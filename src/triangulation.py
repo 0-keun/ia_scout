@@ -42,7 +42,7 @@ def get_pose(D1,D2,dis_anchors):
     # a = D2, b = D1
     dif_h = 0.2
 
-    if D1 == None or D2 ==None:
+    if D1 == None or D2 == None:
         print("UWB0 DATA is None")
         return [0.001,0.001]
     

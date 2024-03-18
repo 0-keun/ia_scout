@@ -4,7 +4,6 @@ import serial
 from rospy import Publisher, Rate, init_node
 from std_msgs.msg import Float32
 import rospy
-import re
 
 port0 = serial.Serial("/dev/ttyUWB0", "115200")
 port1 = serial.Serial("/dev/ttyUWB1", "115200")
