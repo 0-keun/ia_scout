@@ -4,9 +4,10 @@ import serial
 from rospy import Publisher, Rate, init_node
 from std_msgs.msg import Float32
 import rospy
+import re
 
-port0 = serial.Serial("/dev/ttyUWB0", "115200")
-port1 = serial.Serial("/dev/ttyUWB1", "115200")
+port0 = serial.Serial("/dev/ttyUSB3", "115200")
+port1 = serial.Serial("/dev/ttyUSB1", "115200")
 
 '''while True:
         try:
@@ -32,7 +33,7 @@ if __name__ == '__main__':
     publisher_uwb0 = Publisher(name="uwb0_pub", data_class=Float32, queue_size=1)
     publisher_uwb1 = Publisher(name="uwb1_pub", data_class=Float32, queue_size=1)
     
-    r = Rate(100)
+    r = Rate(10)
     while not rospy.is_shutdown():
 
 
@@ -40,25 +41,36 @@ if __name__ == '__main__':
         msg1 = Float32()
         
         uwb0 = port0.readline()
-        #uwb_pattern = r'DIST: (\d+\.\d+) m'
-        #match_1 = re.search(uwb_pattern, uwb0.decode('utf-8'))
-        uwb0_value = float(uwb0.strip().decode('utf-8'))
-        #uwb0_value = float(match_1.group(1))
+        uwb_pattern = r'DIST: (\d+\.\d+) m'
+        match_1 = re.search(uwb_pattern, uwb0.decode('utf-8'))
+        if match_1:
+            uwb0_value = match_1.group(1)
+            msg0.data = float(uwb0_value)
+            publisher_uwb0.publish(msg0)
+
+        #uwb0_ = uwb0.strip().decode('utf-8')
+        
+        #uwb0_value = float(uwb0.strip().decode('utf-8'))
+        #uwb0_value = float(match_1)
         
         uwb1 = port1.readline()
-        #match_2 = re.search(uwb_pattern, uwb1.decode('utf-8'))
+        match_2 = re.search(uwb_pattern, uwb1.decode('utf-8'))
+        if match_2:
+            uwb1_value = match_2.group(1)
+            msg1.data = float(uwb1_value)
+            publisher_uwb1.publish(msg1)
+        #uwb1_value = float(uwb1.strip().decode('utf-8'))
+        #uwb1_value = float(match_2)
 
-        uwb1_value = float(uwb1.strip().decode('utf-8'))
-        #uwb1_value = float(match_2.group(1))
-        msg0.data = uwb0_value
-        msg1.data = uwb1_value
-        while(publisher_uwb0.get_num_connections == 0 or publisher_uwb1.get_num_connections == 0):
-            pass
+        #msg0.data = uwb0_value
+        #msg1.data = uwb1_value
+        #while(publisher_uwb0.get_num_connections == 0 or publisher_uwb1.get_num_connections == 0):
+            #pass
         #while(publisher_uwb0.get_num_connections == 0):
         #    pass
         #rospy.loginfo(msg)
 
-        publisher_uwb0.publish(msg0)
-        publisher_uwb1.publish(msg1)
+        #publisher_uwb0.publish(msg0)
+        #publisher_uwb1.publish(msg1)
 
         r.sleep()

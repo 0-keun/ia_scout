@@ -32,7 +32,7 @@ def get_tf(tag_r,robot_m):
 
         ## real goal is before 1m from tag's position
         D = 1 #[m]
-        theta = math.atan2((tag_r[0]-robot_m[0])/(tag_r[1]-robot_m[1]))
+        theta = math.atan2((tag_r[0]-robot_m[0]),(tag_r[1]-robot_m[1]))
         safety_distance = np.array(
             [
                 [D*math.cos(theta)],

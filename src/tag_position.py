@@ -105,6 +105,8 @@ class Tag_Position():
         self.taginmap.pose.position.y = self.tag_m[1][0]
         self.taginmap.header.stamp = rospy.Time.now()
         self.pub_TagInMap.publish(self.taginmap)
+   
+        print(self.taginmap)
 
     def publish_current_goal(self):
         if math.hypot((self.robot_m[0] - self.tag_m[0][0]),(self.robot_m[1] - self.tag_m[1][0])) > self.dis_threshold:
@@ -116,10 +118,10 @@ class Tag_Position():
                 self.goal_msg.pose.position.x = self.safe_goal[0][0]
                 self.goal_msg.pose.position.y = self.safe_goal[1][0]
                 self.goal_msg.pose.position.z = 0.0
-                self.goal_msg.pose.orientation.x = self.rotation[0]
-                self.goal_msg.pose.orientation.y = self.rotation[1]
-                self.goal_msg.pose.orientation.z = self.rotation[2]
-                self.goal_msg.pose.orientation.w = self.rotation[3]
+                #self.goal_msg.pose.orientation.x = self.rotation[0]
+                #self.goal_msg.pose.orientation.y = self.rotation[1]
+                #self.goal_msg.pose.orientation.z = self.rotation[2]
+                #self.goal_msg.pose.orientation.w = self.rotation[3]
 
                 self.goal_publisher.publish(self.goal_msg)
                 
