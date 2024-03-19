@@ -5,7 +5,7 @@ import numpy as np
 class MovAvg_Filter:
 
     def __init__(self):
-        self.n = 10
+        self.n = 100
         self.x_n = np.ones(self.n)
 
     def mov_avg_filter(self, x_meas):
