@@ -3,7 +3,6 @@ import numpy as np
 
 def get_tf(tag_r,robot_m):
     if tag_r[0] != None and tag_r[1] != None:
-        
         yaw = robot_m[3] # robot's yaw angle in the "map" frame
 
         ## yaw angle of robot in the "map" frame
@@ -43,7 +42,8 @@ def get_tf(tag_r,robot_m):
         tag_m = np.matmul(rotation_mat, tag)
 
         tag_m = tag_m + translation_mat
-        safe_goal = tag_m - safety_distance
+        safe_goal = tag_m + safety_distance
+        local_yaw = theta - yaw
 
     else:
         tag_m = np.array(
@@ -53,5 +53,6 @@ def get_tf(tag_r,robot_m):
             ]
         )   
         safe_goal = tag_m
+        local_yaw = 0
 
-    return tag_m, safe_goal
+    return tag_m, safe_goal, local_yaw

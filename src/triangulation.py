@@ -4,29 +4,15 @@ from filter import MovAvg_Filter
 MAF = MovAvg_Filter()
 
 def get_angle(a,b,c): # a, b, c are length of triangle
-    tem = (math.pow(b,2) + math.pow(c,2) - math.pow(a,2)) / (2*b*c)
-    if tem > 0.9999:
-        tem = 0.9999
-    elif tem > 0.995:
-        tem = 0.995
-    elif tem > 0.984:
-        tem = 0.984
-
-    if tem < -0.9999:
-        tem = -0.9999
-    elif tem < -0.995:
-        tem = -0.995
-    elif tem < -0.984:
-        tem = -0.984
-
+    tem = (b**2 + c**2 - a**2) / (2*b*c)
+    tem = 0.9 * tem 
     ang = MAF.mov_avg_filter(math.acos(tem))
-
     return ang
 
 def get_wh(D1,A,dis_anchors):
     h = D1 * math.sin(A)
     w = D1 * math.cos(A) - (dis_anchors/2)
-    return [w,h]
+    return [h,w]
 
 def Pythagoras(hypotenuse,height):
     if hypotenuse > height:
@@ -34,7 +20,6 @@ def Pythagoras(hypotenuse,height):
         length = math.sqrt(d)
     else:
         length = 0
-
     return length
 
 

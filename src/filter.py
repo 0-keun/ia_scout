@@ -51,4 +51,3 @@ class Kalman_Filter:
         self.P = P_pred - K * self.H * P_pred
 
         return self.x_esti
-

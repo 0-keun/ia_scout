@@ -33,7 +33,7 @@ if __name__ == '__main__':
     publisher_uwb0 = Publisher(name="uwb0_pub", data_class=Float32, queue_size=1)
     publisher_uwb1 = Publisher(name="uwb1_pub", data_class=Float32, queue_size=1)
     
-    r = Rate(10)
+    r = Rate(100)
     while not rospy.is_shutdown():
 
 
