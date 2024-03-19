@@ -4,7 +4,7 @@ import rospy
 from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped, Twist
 from std_msgs.msg import Float32
 from triangulation import get_pose
-from tf.transformations import euler_from_quaternion
+from tf.transformations import euler_from_quaternion, quaternion_from_euler
 import math
 from LinearRegression import LR_poly
 from transformation import get_tf
@@ -39,7 +39,7 @@ class Tag_Position():
         #############
         self.init_callback_time = rospy.get_time()
         self.last_callback_time = rospy.get_time()  
-        self.callback_interval = 0.2  # [s]
+        self.callback_interval = 1.0  # [s]
         self.dis_threshold = 1
 
         self.D1, self.D2 = 0.001, 0.001
@@ -101,31 +101,32 @@ class Tag_Position():
         print(self.taginmap)
 
     def turn_to_tag(self, speed):
-        self.turn.linear.x = 0.0
-        self.turn.linear.y = 0.0
-        self.turn.linear.z = speed
+        self.turn.angular.x = 0.0
+        self.turn.angular.y = 0.0
+        self.turn.angular.z = speed
         self.cmd_vel_publisher.publish(self.turn)
 
     def publish_current_goal(self):
         if math.hypot((self.robot_m[0] - self.tag_m[0][0]),(self.robot_m[1] - self.tag_m[1][0])) > self.dis_threshold:
             if rospy.get_time() - self.last_callback_time > self.callback_interval:
-         
+                self.local_yaw = math.atan2(self.tag_m[1][0]-self.robot_m[1],self.tag_m[0][0]-self.robot_m[0])
+                rot = quaternion_from_euler(0,0,self.local_yaw)
                 self.goal_msg.header.stamp = rospy.Time.now()
                 self.goal_msg.header.frame_id = "map"
 
-                self.goal_msg.pose.position.x = self.safe_goal[0][0]
-                self.goal_msg.pose.position.y = self.safe_goal[1][0]
+                self.goal_msg.pose.position.x = self.tag_m[0][0] - math.cos(self.local_yaw)
+                self.goal_msg.pose.position.y = self.tag_m[1][0] - math.sin(self.local_yaw)
                 self.goal_msg.pose.position.z = 0.0
-                # self.goal_msg.pose.orientation.x = self.rotation[0]
-                # self.goal_msg.pose.orientation.y = self.rotation[1]
-                # self.goal_msg.pose.orientation.z = self.rotation[2]
-                # self.goal_msg.pose.orientation.w = self.rotation[3]
-                if self.local_yaw > 0.7:
-                    self.turn_to_tag(-0.3)
-                elif self.local_yaw < -0.7:
-                    self.turn_to_tag(0.3)
-                else:    
-                    self.goal_publisher.publish(self.goal_msg)
+                self.goal_msg.pose.orientation.x = rot[0]
+                self.goal_msg.pose.orientation.y = rot[1]
+                self.goal_msg.pose.orientation.z = rot[2]
+                self.goal_msg.pose.orientation.w = rot[3]
+                #if self.local_yaw > 0.7:
+                #    self.turn_to_tag(0.3)
+                #elif self.local_yaw < -0.7:
+                #    self.turn_to_tag(-0.3)
+                
+                self.goal_publisher.publish(self.goal_msg)
                 
                 rospy.loginfo("MoveBaseSimpleGoal published: %s", self.goal_msg)
                 
