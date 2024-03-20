@@ -4,14 +4,11 @@ import rospy
 from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped, Twist
 from std_msgs.msg import Float32
 from visualization_msgs.msg import Marker
+from actionlib_msgs.msg import GoalID
 from triangulation import get_pose
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 import math
-from LinearRegression import LR_poly
 from transformation import get_tf
-
-D1_poly = LR_poly()
-D2_poly = LR_poly()
 
 class Tag_Position():
     def __init__(self):
@@ -44,6 +41,9 @@ class Tag_Position():
         self.turn.linear.x = 0.0
         self.turn.linear.y = 0.0
         self.turn.linear.z = 0.0
+
+        self.cancel_goal = GoalID()
+        self.cancel_publisher = rospy.Publisher('/move_base/cancel',GoalID,queue_size=1)
 
         #############
         self.init_callback_time = rospy.get_time()
@@ -78,23 +78,11 @@ class Tag_Position():
 
     def anchor1_callback(self, data):
         self.D1 = data.data
-
-        # self.d1time = rospy.get_time() - self.init_callback_time
-        # D1_poly.fit_model(self.d1time,self.D1)
-        # self.est_D2 = D2_poly.estimate_data(self.d1time)
-        # self.est_D1 = self.D1
-
         self.tag_pub()
         self.publish_current_goal()
 
     def anchor2_callback(self, data):
         self.D2 = data.data
-
-        # self.d2time = rospy.get_time() - self.init_callback_time
-        # D2_poly.fit_model(self.d2time,self.D2)
-        # self.est_D1 = D1_poly.estimate_data(self.d2time)
-        # self.est_D2 = self.D2
-
         self.tag_pub()
         self.publish_current_goal()
 
@@ -108,12 +96,6 @@ class Tag_Position():
         self.pub_TagInMap.publish(self.taginmap)
    
         print(self.taginmap)
-
-    def turn_to_tag(self, speed):
-        self.turn.angular.x = 0.0
-        self.turn.angular.y = 0.0
-        self.turn.angular.z = speed
-        self.cmd_vel_publisher.publish(self.turn)
 
     def publish_current_goal(self):
         if math.hypot((self.robot_m[0] - self.tag_m[0][0]),(self.robot_m[1] - self.tag_m[1][0])) > self.dis_threshold:
@@ -130,10 +112,6 @@ class Tag_Position():
                 self.goal_msg.pose.orientation.y = rot[1]
                 self.goal_msg.pose.orientation.z = rot[2]
                 self.goal_msg.pose.orientation.w = rot[3]
-                #if self.local_yaw > 0.7:
-                #    self.turn_to_tag(0.3)
-                #elif self.local_yaw < -0.7:
-                #    self.turn_to_tag(-0.3)
                 
                 self.goal_publisher.publish(self.goal_msg)
                 
