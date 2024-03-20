@@ -42,7 +42,7 @@ def get_tf(tag_r,robot_m):
         tag_m = np.matmul(rotation_mat, tag)
 
         tag_m = tag_m + translation_mat
-        safe_goal = tag_m + safety_distance
+        safe_goal = tag_m - safety_distance
         local_yaw = theta - yaw
 
     else:
@@ -55,4 +55,4 @@ def get_tf(tag_r,robot_m):
         safe_goal = tag_m
         local_yaw = 0
 
-    return tag_m, safe_goal, local_yaw
+    return tag_m, safe_goal, theta
