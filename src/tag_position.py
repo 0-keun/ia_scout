@@ -3,6 +3,7 @@
 import rospy
 from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped, Twist
 from std_msgs.msg import Float32
+from visualization_msgs.msg import Marker
 from triangulation import get_pose
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 import math
@@ -22,10 +23,18 @@ class Tag_Position():
         rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped, self.amcl_pose_callback)
 
         ### pub ###   
-        self.pub_TagInMap = rospy.Publisher("tag_in_map", PoseStamped, queue_size=1)
-
-        self.taginmap = PoseStamped()
+        self.taginmap = Marker()
+        self.pub_TagInMap = rospy.Publisher("tag_in_map", Marker, queue_size=1)
         self.taginmap.header.frame_id = "map"
+        self.taginmap.type = 2
+        self.taginmap.id = 0
+        self.taginmap.scale.x = 0.4
+        self.taginmap.scale.y = 0.4
+        self.taginmap.scale.z = 0.4
+        self.taginmap.color.r = 0.0
+        self.taginmap.color.g = 1.0
+        self.taginmap.color.b = 0.0
+        self.taginmap.color.a = 1.0
 
         self.goal_msg = PoseStamped()
         self.goal_publisher = rospy.Publisher('move_base_simple/goal', PoseStamped, queue_size=1)
