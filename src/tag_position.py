@@ -8,11 +8,7 @@ from actionlib_msgs.msg import GoalID
 from triangulation import get_pose
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 import math
-from LinearRegression import LR_poly
 from transformation import get_tf
-
-D1_poly = LR_poly()
-D2_poly = LR_poly()
 
 class Tag_Position():
     def __init__(self):
@@ -82,23 +78,11 @@ class Tag_Position():
 
     def anchor1_callback(self, data):
         self.D1 = data.data
-
-        # self.d1time = rospy.get_time() - self.init_callback_time
-        # D1_poly.fit_model(self.d1time,self.D1)
-        # self.est_D2 = D2_poly.estimate_data(self.d1time)
-        # self.est_D1 = self.D1
-
         self.tag_pub()
         self.publish_current_goal()
 
     def anchor2_callback(self, data):
         self.D2 = data.data
-
-        # self.d2time = rospy.get_time() - self.init_callback_time
-        # D2_poly.fit_model(self.d2time,self.D2)
-        # self.est_D1 = D1_poly.estimate_data(self.d2time)
-        # self.est_D2 = self.D2
-
         self.tag_pub()
         self.publish_current_goal()
 
